@@ -132,6 +132,13 @@ if (!$result_produk) {
                     Kamu bisa memilih tingkat kematangan saat melakukan pemesanan dengan mengisi form catatan.</p>
             </details>
         </div>
+        <div class="faq-card">
+            <details>
+                <summary>5. 🕒 Jam Operasional</summary>
+                <p>Kami buka setiap hari mulai pukul:
+                17.00 – 00.00 WIB</p>
+            </details>
+        </div>
 </section>
 <section id="contact" class="contact">
     <h2><span>Kontak</span> Kami</h2>
