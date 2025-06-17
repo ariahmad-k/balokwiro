@@ -26,7 +26,7 @@ if (!isset($koneksi) || $koneksi === null) {
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/png" href="assets/img/logo-kuebalok.png">
+    <link rel="icon" type="image/png" href="backend/assets/img/logo-kuebalok.png">
     <title><?php echo isset($page_title) ? htmlspecialchars($page_title) . ' - ' : ''; ?>Kue Balok Mang Wiro</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -35,6 +35,7 @@ if (!isset($koneksi) || $koneksi === null) {
         rel="stylesheet" />
 
     <script src="https://unpkg.com/feather-icons"></script>
+
 
     <link rel="stylesheet" href="assets/css/style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
