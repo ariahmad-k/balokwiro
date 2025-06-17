@@ -28,20 +28,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_pesan'])) {
     exit;
 }
 
-// --- LOGIKA MENGAMBIL SEMUA PRODUK AKTIF ---
 // --- LOGIKA MENGAMBIL SEMUA PRODUK AKTIF (Versi lebih aman) ---
-$sql_produk = "SELECT id_produk, nama_produk, harga, poto_produk 
-               FROM produk 
-               WHERE status_produk = 'aktif'
-               ORDER BY kategori, nama_produk";
-
+$sql_produk = "SELECT id_produk, nama_produk, harga, poto_produk FROM produk WHERE status_produk = 'aktif' ORDER BY nama_produk";
 $result_produk = mysqli_query($koneksi, $sql_produk);
-
-// Tambahkan pengecekan ini
 if (!$result_produk) {
-    // Jika kueri gagal, tampilkan pesan error yang jelas dan hentikan skrip.
-    // Ini lebih baik untuk debugging daripada halaman putih atau error yang tidak jelas.
     die("Error: Kueri untuk mengambil produk gagal dieksekusi. " . mysqli_error($koneksi));
+}
+
+// Group products by jenis menu (KB, KS, OT, DK)
+$produk_grouped = [
+    'KB' => [],
+    'KS' => [],
+    'OT' => [],
+    'DK' => []
+];
+while ($row = mysqli_fetch_assoc($result_produk)) {
+    $prefix = strtoupper(substr($row['id_produk'], 0, 2));
+    if (isset($produk_grouped[$prefix])) {
+        $produk_grouped[$prefix][] = $row;
+    }
 }
 
 ?>
@@ -69,29 +74,42 @@ if (!$result_produk) {
 <section id="menu" class="menu">
     <h2><span>Menu</span> Kami</h2>
     <p>Berikut adalah beberapa menu andalan kami. Lihat menu selengkapnya dan pesan sekarang!</p>
-    <div class="menu-nav-wrapper">
-        <div class="menu-horizontal-scroll">
-            <?php while ($row = mysqli_fetch_assoc($result_produk)) : ?>
-                <div class="menu-card-horizontal">
-                    <div class="menu-card-horizontal-inner">
-                        <img src="backend/assets/img/produk/<?= htmlspecialchars($row['poto_produk'] ?? 'default.jpg') ?>"
-                            alt="<?= htmlspecialchars($row['nama_produk'] ?? 'Gambar Produk') ?>"
-                            class="menu-card-img">
-                        <div class="menu-card-horizontal-content">
-                            <div class="menu-card-horizontal-label">Menu</div>
-                            <h3 class="menu-card-title"><?= htmlspecialchars($row['nama_produk'] ?? 'Nama Produk') ?></h3>
-                            <p class="menu-card-price">Rp <?= number_format($row['harga'] ?? 0, 0, ',', '.') ?></p>
+    <?php
+    $jenis_menu_labels = [
+        'KB' => 'Kue Balok',
+        'KS' => 'Ketan Susu',
+        'OT' => 'Makanan Lain',
+        'DK' => 'Minuman'
+    ];
+    foreach ($produk_grouped as $jenis => $produk_list) :
+        if (empty($produk_list)) continue;
+    ?>
+    <div class="menu-group-section">
+        <h3 class="menu-group-title"><?= htmlspecialchars($jenis_menu_labels[$jenis]) ?></h3>
+        <div class="menu-nav-wrapper">
+            <div class="menu-horizontal-scroll" id="scroll-<?= $jenis ?>">
+                <?php foreach ($produk_list as $row) : ?>
+                    <div class="menu-card-horizontal">
+                        <div class="menu-card-horizontal-inner">
+                            <img src="backend/assets/img/produk/<?= htmlspecialchars($row['poto_produk'] ?? 'default.jpg') ?>"
+                                alt="<?= htmlspecialchars($row['nama_produk'] ?? 'Gambar Produk') ?>"
+                                class="menu-card-img">
+                            <div class="menu-card-horizontal-content">
+                                <div class="menu-card-horizontal-label">Menu</div>
+                                <h3 class="menu-card-title"><?= htmlspecialchars($row['nama_produk'] ?? 'Nama Produk') ?></h3>
+                                <p class="menu-card-price">Rp <?= number_format($row['harga'] ?? 0, 0, ',', '.') ?></p>
+                            </div>
                         </div>
-                        <button class="menu-card-horizontal-plus"><span>+</span></button>
                     </div>
-                </div>
-            <?php endwhile; ?>
+                <?php endforeach; ?>
+            </div>
+            <div class="menu-nav-buttons">
+                <button class="menu-nav-arrow left" data-target="scroll-<?= $jenis ?>" aria-label="Scroll Kiri">&#x2039;</button>
+                <button class="menu-nav-arrow right" data-target="scroll-<?= $jenis ?>" aria-label="Scroll Kanan">&#x203A;</button>
+            </div>
         </div>
     </div>
-    <div class="menu-nav-buttons">
-        <button class="menu-nav-arrow left" aria-label="Scroll Kiri">&#x2039;</button>
-        <button class="menu-nav-arrow right" aria-label="Scroll Kanan">&#x203A;</button>
-    </div>
+    <?php endforeach; ?>
 </section>
 <section id="faq" class="faq">
     <h2><span>FAQ</span></h2>
@@ -103,7 +121,7 @@ if (!$result_produk) {
             <details>
                 <summary>1. Bagaimana cara memesan Kue Balok secara online?</summary>
                 <p>Kamu dapat memesan Kue Balok secara online melalui website resmi kami.
-                    Cukup klik menu “Pesan Sekarang” pada navigasi bar, pilih varian kue yang kamu inginkan, tentukan jumlah, lalu lanjut ke proses checkout. Pesananmu akan diproses setelah pembayaran berhasil dilakukan.
+                    Cukup klik menu "Pesan Sekarang" pada navigasi bar, pilih varian kue yang kamu inginkan, tentukan jumlah, lalu lanjut ke proses checkout. Pesananmu akan diproses setelah pembayaran berhasil dilakukan.
                 </p>
             </details>
         </div>
@@ -119,7 +137,7 @@ if (!$result_produk) {
                 <summary>3. Di mana lokasi outlet Kue Balok Mang Wiro?</summary>
                 <p>Outlet kami berlokasi di:
                     📍 Jalan Otista, samping SMPN 3 Subang
-                    Informasi lengkap mengenai lokasi dan jam operasional dapat kamu lihat di halaman “Tentang Kami” di website.
+                    Informasi lengkap mengenai lokasi dan jam operasional dapat kamu lihat di halaman "Tentang Kami" di website.
                 </p>
             </details>
         </div>
@@ -129,14 +147,14 @@ if (!$result_produk) {
                 <p>Tentu saja! Kami menyediakan dua pilihan tingkat kematangan untuk menyesuaikan selera kamu:
                     - Setengah Matang – Kue terasa lumer dan lembut di dalam.
                     - Matang – Tekstur lebih padat, cocok untuk kamu yang suka kue tidak terlalu basah.
-                    Kamu bisa memilih tingkat kematangan saat melakukan pemesanan dengan mengisi form catatan.</p>
+                    Kamu bisa memilih tingkat kematangan saat melakukan pemesanan dengan mengisi form catatan.</p>
             </details>
         </div>
         <div class="faq-card">
             <details>
                 <summary>5. 🕒 Jam Operasional</summary>
                 <p>Kami buka setiap hari mulai pukul:
-                17.00 – 00.00 WIB</p>
+                17.00 – 00.00 WIB</p>
             </details>
         </div>
 </section>
@@ -180,41 +198,35 @@ include 'includes/footer.php';
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Menu scroll functionality
-        const scrollContainer = document.querySelector('.menu-horizontal-scroll');
-        const btnLeft = document.querySelector('.menu-nav-arrow.left');
-        const btnRight = document.querySelector('.menu-nav-arrow.right');
-        const scrollAmount = 340;
-
-        function updateArrowVisibility() {
-            if (scrollContainer.scrollLeft <= 2) {
-                btnLeft.classList.add('arrow-hidden');
-            } else {
-                btnLeft.classList.remove('arrow-hidden');
+        // Multi-section menu scroll functionality
+        document.querySelectorAll('.menu-nav-wrapper').forEach(function(wrapper) {
+            const scrollContainer = wrapper.querySelector('.menu-horizontal-scroll');
+            const btnLeft = wrapper.querySelector('.menu-nav-arrow.left');
+            const btnRight = wrapper.querySelector('.menu-nav-arrow.right');
+            const scrollAmount = 340;
+            if (!scrollContainer || !btnLeft || !btnRight) return;
+            function updateArrowVisibility() {
+                if (scrollContainer.scrollLeft <= 2) {
+                    btnLeft.classList.add('arrow-hidden');
+                } else {
+                    btnLeft.classList.remove('arrow-hidden');
+                }
+                if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 2) {
+                    btnRight.classList.add('arrow-hidden');
+                } else {
+                    btnRight.classList.remove('arrow-hidden');
+                }
             }
-            if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 2) {
-                btnRight.classList.add('arrow-hidden');
-            } else {
-                btnRight.classList.remove('arrow-hidden');
-            }
-        }
-
-        btnLeft.addEventListener('click', function() {
-            scrollContainer.scrollBy({
-                left: -scrollAmount,
-                behavior: 'smooth'
+            btnLeft.addEventListener('click', function() {
+                scrollContainer.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
             });
-        });
-        btnRight.addEventListener('click', function() {
-            scrollContainer.scrollBy({
-                left: scrollAmount,
-                behavior: 'smooth'
+            btnRight.addEventListener('click', function() {
+                scrollContainer.scrollBy({ left: scrollAmount, behavior: 'smooth' });
             });
+            scrollContainer.addEventListener('scroll', updateArrowVisibility);
+            window.addEventListener('resize', updateArrowVisibility);
+            setTimeout(updateArrowVisibility, 100);
         });
-
-        scrollContainer.addEventListener('scroll', updateArrowVisibility);
-        window.addEventListener('resize', updateArrowVisibility);
-        setTimeout(updateArrowVisibility, 100);
 
         // Enhanced scroll animations for all sections
         const sections = document.querySelectorAll('section');
