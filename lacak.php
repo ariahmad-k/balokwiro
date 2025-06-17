@@ -23,7 +23,7 @@ $result_antrean = mysqli_query($koneksi, $sql_antrean);
 $antrean_publik = mysqli_fetch_all($result_antrean, MYSQLI_ASSOC);
 ?>
 <head>
-    <meta http-equiv="refresh" content="5">
+    <meta http-equiv="refresh" content="10">
 
 </head>
 <style>
