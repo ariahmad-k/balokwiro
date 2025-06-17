@@ -68,11 +68,10 @@ $result_produk = mysqli_query($koneksi, $sql_produk);
         }
 
         .menu-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 1.5rem;
-            /* Jarak antar kartu */
+            align-items: stretch;
         }
 
         /* ============================================= */
@@ -91,19 +90,16 @@ $result_produk = mysqli_query($koneksi, $sql_produk);
             background-color: #fff;
             border: 1px solid #ddd;
             border-radius: 8px;
-            /* Memberi sudut melengkung */
             text-align: center;
             padding: 1.5rem 1rem;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            /* Memberi sedikit bayangan */
             transition: transform 0.2s, box-shadow 0.2s;
             cursor: pointer;
-
-            /* Gunakan flexbox untuk menata isi kartu secara vertikal */
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            /* Mendorong tombol ke bawah */
+            height: 100%;
+            min-height: 370px;
+            max-width: 100%;
         }
 
         .menu-card:hover {
@@ -115,26 +111,28 @@ $result_produk = mysqli_query($koneksi, $sql_produk);
         .menu-card .menu-card-img {
             width: 100%;
             height: 180px;
-            /* Beri tinggi yang seragam untuk semua gambar */
             object-fit: cover;
-            /* Memastikan gambar terpotong rapi, tidak gepeng */
             border-radius: 5px;
             margin-bottom: 1rem;
+            background: #f5f5f5;
         }
 
         .menu-card .menu-card-title {
             font-size: 1.2rem;
             font-weight: 600;
             margin: 0.5rem 0;
-            flex-grow: 1;
-            /* Membuat judul mengisi ruang agar tombol rata bawah */
+            min-height: 40px;
+            max-height: 48px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .menu-card .menu-card-price {
             font-size: 1.1rem;
             font-weight: bold;
             color: var(--primary);
-            /* Menggunakan warna utama tema Anda */
             margin: 0.5rem 0;
         }
 
@@ -147,7 +145,6 @@ $result_produk = mysqli_query($koneksi, $sql_produk);
         /* --- 3. Perbaikan Tombol di Dalam Kartu --- */
         .add-to-cart-btn {
             margin-top: auto;
-            /* Mendorong tombol ini ke bagian paling bawah kartu */
         }
 
         .add-to-cart-btn .btn {
@@ -175,6 +172,12 @@ $result_produk = mysqli_query($koneksi, $sql_produk);
 
         .add-to-cart-btn .btn svg {
             margin-right: 0.5rem;
+        }
+
+        @media (max-width: 600px) {
+            .menu-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 
