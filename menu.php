@@ -82,6 +82,8 @@ $result_produk = mysqli_query($koneksi, $sql_produk);
         /* Memberi jarak atas agar konten tidak tertutup navbar yang fixed */
         .main-content-page {
             padding-top: 6rem;
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
             /* Sesuaikan angka ini jika navbar Anda lebih tinggi/pendek */
         }
 
@@ -179,6 +181,9 @@ $result_produk = mysqli_query($koneksi, $sql_produk);
                 grid-template-columns: repeat(2, 1fr);
             }
         }
+        /* .main-content-page{
+            padding: 1.5rem;
+        } */
     </style>
 
 </head>

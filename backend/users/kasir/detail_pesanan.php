@@ -146,8 +146,8 @@ if (!$pesanan) {
     <div class="receipt-container">
         <div class="receipt-header">
             <h1>Kue Balok Mang Wiro</h1>
-            <p>Jl. Kenangan Indah No. 123, Bandung</p>
-            <p>Telp: 0812-3456-7890</p>
+            <p>Jl. Ostista no. 50, Subang</p>
+            <p>Telp: 0812-2257-2886</p>
         </div>
 
         <table class="transaction-details">

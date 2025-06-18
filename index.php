@@ -136,8 +136,7 @@ while ($row = mysqli_fetch_assoc($result_produk)) {
             <details>
                 <summary>3. Di mana lokasi outlet Kue Balok Mang Wiro?</summary>
                 <p>Outlet kami berlokasi di:
-                    📍 Jalan Otista, samping SMPN 3 Subang
-                    Informasi lengkap mengenai lokasi dan jam operasional dapat kamu lihat di halaman "Tentang Kami" di website.
+                    📍 Jalan Otista, samping SMPN 3 Subang.
                 </p>
             </details>
         </div>
@@ -152,7 +151,7 @@ while ($row = mysqli_fetch_assoc($result_produk)) {
         </div>
         <div class="faq-card">
             <details>
-                <summary>5. 🕒 Jam Operasional</summary>
+                <summary>5. Jam Operasional</summary>
                 <p>Kami buka setiap hari mulai pukul:
                 17.00 – 00.00 WIB</p>
             </details>
