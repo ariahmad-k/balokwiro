@@ -1082,3 +1082,17 @@ footer .credit p {
 .progress-step.completed::after {
   background-color: #198754; /* Garis Hijau */
 }
+
+@media (max-width: 600px) {
+  .apple-style-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+    justify-content: unset !important;
+  }
+  .apple-card {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+}
