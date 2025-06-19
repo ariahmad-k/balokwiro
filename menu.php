@@ -33,8 +33,30 @@ if ($result_stok) {
 $sql_produk = "SELECT id_produk, nama_produk, harga, poto_produk, kategori, id_kategori_stok
                FROM produk 
                WHERE status_produk = 'aktif' 
-               ORDER BY kategori ASC, nama_produk ASC";
+               ORDER BY id_produk ASC";
 $result_produk = mysqli_query($koneksi, $sql_produk);
+
+// Group products by jenis menu (KB, KS, OT, DK)
+$produk_grouped = [
+    'KB' => [],
+    'KS' => [],
+    'OT' => [],
+    'DK' => []
+];
+if ($result_produk) {
+    while ($row = mysqli_fetch_assoc($result_produk)) {
+        $prefix = strtoupper(substr($row['id_produk'], 0, 2));
+        if (isset($produk_grouped[$prefix])) {
+            $produk_grouped[$prefix][] = $row;
+        }
+    }
+}
+$jenis_menu_labels = [
+    'KB' => 'Kue Balok',
+    'KS' => 'Ketan Susu',
+    'OT' => 'Makanan Lain',
+    'DK' => 'Minuman'
+];
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -180,10 +202,162 @@ $result_produk = mysqli_query($koneksi, $sql_produk);
             .menu-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
+            .apple-style-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+                justify-content: unset;
+            }
+            .apple-card {
+                width: 100%;
+                min-width: 0;
+                max-width: 100%;
+            }
         }
         /* .main-content-page{
             padding: 1.5rem;
         } */
+
+        .menu-filter-bar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .kategori-filter-btn-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            background: #fff;
+            border-radius: 999px;
+            padding: 0.5rem 1.5rem;
+            box-shadow: 0 2px 8px rgba(44, 62, 80, 0.07);
+            border: 1px solid #e0e0e0;
+        }
+
+        .filter-btn {
+            border-radius: 999px !important;
+            border: 1px solid var(--primary) !important;
+            padding: 0.5rem 1.5rem !important;
+            font-weight: bold;
+            background: #fff !important;
+            color: var(--primary) !important;
+            transition: background 0.2s, color 0.2s;
+        }
+        .filter-btn.active,
+        .filter-btn:hover {
+            background: var(--primary) !important;
+            color: #fff !important;
+        }
+
+        .search-bar-wrapper {
+            width: 100%;
+            max-width: 400px;
+            background: #fff;
+            border-radius: 999px;
+            box-shadow: 0 2px 8px rgba(44, 62, 80, 0.07);
+            border: 1px solid #e0e0e0;
+            padding: 0.2rem 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        #menu-search-bar {
+            width: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+            padding: 0.7rem 0.5rem;
+            font-size: 1rem;
+            border-radius: 999px;
+        }
+
+        .apple-style-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 32px;
+            justify-content: center;
+        }
+
+        .apple-card {
+            position: relative;
+            width: 270px;
+            min-height: 420px;
+            background: #fff;
+            border-radius: 28px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: box-shadow 0.2s;
+        }
+        .apple-card:hover {
+            box-shadow: 0 16px 40px rgba(0,0,0,0.18);
+        }
+
+        .apple-card-img-wrapper {
+            width: 100%;
+            height: 220px;
+            background: #f5f5f7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .apple-card-img {
+            max-width: 90%;
+            max-height: 180px;
+            object-fit: contain;
+            border-radius: 18px;
+        }
+
+        .apple-card-content {
+            padding: 24px 20px 60px 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+        .apple-card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #222;
+        }
+        .apple-card-price {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #0071e3;
+            margin-bottom: 6px;
+        }
+        .apple-card-stock {
+            font-size: 1rem;
+            color: #555;
+        }
+
+        .apple-cart-btn {
+            position: absolute;
+            right: 18px;
+            bottom: 18px;
+            background: #222;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .apple-cart-btn:hover {
+            background: #0071e3;
+        }
     </style>
 
 </head>
@@ -216,65 +390,99 @@ $result_produk = mysqli_query($koneksi, $sql_produk);
         </div>
     </nav>
     <div class="main-content-page">
-
-
+        <div class="menu-filter-bar">
+            <div class="kategori-filter-btn-group">
+                <button class="filter-btn" data-filter="all">Semua</button>
+                <?php foreach ($jenis_menu_labels as $kode => $label): ?>
+                    <button class="filter-btn" data-filter="<?= $kode ?>"> <?= htmlspecialchars($label) ?> </button>
+                <?php endforeach; ?>
+            </div>
+            <div class="search-bar-wrapper">
+                <input type="text" id="menu-search-bar" placeholder="Cari menu...">
+            </div>
+        </div>
         <div class="card">
-
             <div class="card-body">
-
-                <?php if ($result_produk && mysqli_num_rows($result_produk) > 0): ?>
-                    <?php
-                    $current_kategori = '';
-                    // Loop untuk setiap kategori
-                    while ($row = mysqli_fetch_assoc($result_produk)):
-                        // Jika kategori berubah, cetak judul kategori baru
-                        if ($row['kategori'] != $current_kategori) {
-                            if ($current_kategori != '') echo '</div>'; // Tutup .menu-grid sebelumnya
-                            $current_kategori = $row['kategori'];
-                            echo '<h3 class="kategori-title">' . htmlspecialchars(strtoupper($current_kategori)) . '</h3>';
-                            echo '<div class="menu-grid">'; // Buka .menu-grid baru
-                        }
-
-                        // Tentukan stok yang akan ditampilkan
+                <div id="menu-card-grid" class="menu-grid apple-style-grid">
+                <?php foreach ($produk_grouped as $kode => $produk_list):
+                    foreach ($produk_list as $row):
                         $stok_tampil = 0;
                         if (!empty($row['id_kategori_stok'])) {
                             $stok_tampil = $stok_terkini['kategori'][$row['id_kategori_stok']] ?? 0;
                         } else {
                             $stok_tampil = $stok_terkini['produk'][$row['id_produk']] ?? 0;
                         }
-                    ?>
-                        <div class="menu-card"
-                            data-id="<?= htmlspecialchars($row['id_produk']) ?>"
-                            data-nama="<?= htmlspecialchars($row['nama_produk']) ?>"
-                            data-harga="<?= htmlspecialchars($row['harga']) ?>"
-                            data-stok="<?= htmlspecialchars($stok_tampil) ?>">
-
-                            <img src="backend/assets/img/produk/<?= htmlspecialchars($row['poto_produk'] ?: 'default.jpg') ?>" alt="<?= htmlspecialchars($row['nama_produk']) ?>" class="menu-card-img">
-
-                            <h3 class="menu-card-title">- <?= htmlspecialchars($row['nama_produk']) ?> -</h3>
-                            <p class="menu-card-price">Rp <?= number_format($row['harga'], 0, ',', '.') ?></p>
-                            <p class="menu-card-stock">Stok: <strong><?= $stok_tampil ?></strong></p>
-                            <div class="add-to-cart-btn">
-                                <button class="btn"
-                                    data-id="<?= htmlspecialchars($row['id_produk'] ?? '') ?>"
-                                    data-nama="<?= htmlspecialchars($row['nama_produk'] ?? 'Produk') ?>"
-                                    data-harga="<?= htmlspecialchars($row['harga'] ?? 0) ?>">
-
-                                    <i data-feather="shopping-cart"></i> Tambah
-                                </button>
-                            </div>
+                ?>
+                    <div class="apple-card" data-kategori="<?= $kode ?>" data-nama="<?= htmlspecialchars(strtolower($row['nama_produk'])) ?>">
+                        <div class="apple-card-img-wrapper">
+                            <img src="backend/assets/img/produk/<?= htmlspecialchars($row['poto_produk'] ?: 'default.jpg') ?>" alt="<?= htmlspecialchars($row['nama_produk']) ?>" class="apple-card-img">
                         </div>
-
-                    <?php
-                    endwhile;
-                    echo '</div>'; // Tutup .menu-grid terakhir
-                    ?>
-                <?php else: ?>
-                    <p class="text-center">Maaf, belum ada menu yang tersedia saat ini.</p>
-                <?php endif; ?>
-
+                        <div class="apple-card-content">
+                            <h3 class="apple-card-title"><?= htmlspecialchars($row['nama_produk']) ?></h3>
+                            <p class="apple-card-price">Rp <?= number_format($row['harga'], 0, ',', '.') ?></p>
+                            <p class="apple-card-stock">Stok: <strong><?= $stok_tampil ?></strong></p>
+                        </div>
+                        <button class="apple-cart-btn"
+                            data-id="<?= htmlspecialchars($row['id_produk'] ?? '') ?>"
+                            data-nama="<?= htmlspecialchars($row['nama_produk'] ?? 'Produk') ?>"
+                            data-harga="<?= htmlspecialchars($row['harga'] ?? 0) ?>">
+                            <i data-feather="shopping-cart"></i>
+                        </button>
+                    </div>
+                <?php endforeach; endforeach; ?>
+                </div>
             </div>
         </div>
     </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Filter kategori
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const menuCards = document.querySelectorAll('.apple-card');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                filterBtns.forEach(b => b.style.background = '#fff', b => b.style.color = 'var(--primary)');
+                this.style.background = 'var(--primary)';
+                this.style.color = '#fff';
+                const filter = this.dataset.filter;
+                menuCards.forEach(card => {
+                    if (filter === 'all' || card.dataset.kategori === filter) {
+                        card.style.display = '';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+        // Search bar
+        const searchBar = document.getElementById('menu-search-bar');
+        searchBar.addEventListener('input', function() {
+            const keyword = this.value.trim().toLowerCase();
+            menuCards.forEach(card => {
+                const nama = card.dataset.nama;
+                if (nama.includes(keyword)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        if (document.querySelector('.apple-card')) {
+            const addToCartButtons = document.querySelectorAll('.apple-cart-btn');
+            addToCartButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const product = {
+                        id: this.dataset.id,
+                        nama: this.dataset.nama,
+                        harga: parseInt(this.dataset.harga)
+                    };
+                    addToCart(product);
+                });
+            });
+        }
+    });
+    </script>
 
     <?php include 'includes/footer.php'; ?>
