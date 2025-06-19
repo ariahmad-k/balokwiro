@@ -365,7 +365,9 @@ $jenis_menu_labels = [
 <body>
     <nav class="navbar">
         <a href="index.php" class="navbar-logo">
-            <img src="assets/img/logo kecil 5.png" alt="LOGO KUE BALOK MANG WIRO" />
+            <img src="assets/img/logo.png" alt="LOGO KUE BALOK MANG WIRO" style="width: 50px;"/>
+    <!-- <link rel="icon" type="image/png" href="backend/assets/img/logo-kuebalok.png"> -->
+
         </a>
         <div class="navbar-nav">
             <a href="index.php#home">Beranda</a>

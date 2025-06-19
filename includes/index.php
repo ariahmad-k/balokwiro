@@ -162,7 +162,7 @@ $total_menu_nonaktif = mysqli_fetch_assoc($result_total_nonaktif)['total'] ?? 0;
                                     </div>
                                 </div>
                                 <div class="card-footer d-flex align-items-center justify-content-between">
-                                    <a class="small text-white stretched-link" href="stok/laporan_stok.php">Kelola Sekarang</a>
+                                    <a class="small text-white stretched-link" href="stok/manajemen_stok.php">Kelola Sekarang</a>
                                     <div class="small text-white"><i class="fas fa-angle-right"></i></div>
                                 </div>
                             </div>

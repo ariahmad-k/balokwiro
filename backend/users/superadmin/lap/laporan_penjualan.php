@@ -52,6 +52,16 @@ switch ($periode) {
         $dto->modify('+6 days');
         $tanggal_selesai = $dto->format('Y-m-d');
         break;
+    case 'tahunan':
+        // Validasi format empat digit untuk tahun
+        if (empty($nilai) || !preg_match('/^\d{4}$/', $nilai)) {
+            $nilai = date('Y'); // Default ke tahun sekarang jika tidak valid
+        }
+        // Atur tanggal mulai ke 1 Januari dan tanggal selesai ke 31 Desember
+        $tanggal_mulai = $nilai . '-01-01';
+        $tanggal_selesai = $nilai . '-12-31';
+        $label_periode = "Tahun " . $nilai;
+        break;
 
     case 'bulanan':
     default:
@@ -228,22 +238,29 @@ if ($jenis_laporan === 'pemasukan') {
                                             </div>
                                             <div class="col-md-3">
                                                 <label for="periode" class="form-label">Periode:</label>
-                                                <select class="form-select" name="periode" id="periode" onchange="this.form.submit()">
+                                                <select class="form-select" name="periode" id="periode">
                                                     <option value="harian" <?= $periode == 'harian' ? 'selected' : '' ?>>Harian</option>
                                                     <option value="mingguan" <?= $periode == 'mingguan' ? 'selected' : '' ?>>Mingguan</option>
                                                     <option value="bulanan" <?= $periode == 'bulanan' ? 'selected' : '' ?>>Bulanan</option>
+                                                    <option value="tahunan" <?= $periode == 'tahunan' ? 'selected' : '' ?>>Tahunan</option>
                                                 </select>
                                             </div>
                                             <div class="col-md-3">
-                                                <label for="nilai" class="form-label">Pilih Tanggal:</label>
-                                                <?php if ($periode == 'harian'): ?>
-                                                    <input type="date" class="form-control" id="nilai" name="nilai" value="<?= htmlspecialchars($nilai) ?>">
-                                                <?php elseif ($periode == 'mingguan'): ?>
-                                                    <input type="week" class="form-control" id="nilai" name="nilai" value="<?= htmlspecialchars($nilai) ?>">
-                                                <?php else: // bulanan 
-                                                ?>
-                                                    <input type="month" class="form-control" id="nilai" name="nilai" value="<?= htmlspecialchars($nilai) ?>">
-                                                <?php endif; ?>
+                                                <label for="nilai" class="form-label" id="nilai_label">Pilih Nilai:</label>
+                                                <input type="date" class="form-control" id="nilai_harian" name="nilai" value="<?= htmlspecialchars($nilai) ?>">
+                                                <input type="week" class="form-control" id="nilai_mingguan" name="nilai" value="<?= htmlspecialchars($nilai) ?>">
+                                                <input type="month" class="form-control" id="nilai_bulanan" name="nilai" value="<?= htmlspecialchars($nilai) ?>">
+
+                                                <select class="form-select" id="nilai_tahunan" name="nilai">
+                                                    <?php
+                                                    // Query untuk mendapatkan semua tahun unik dari data pesanan
+                                                    $query_tahun = mysqli_query($koneksi, "SELECT DISTINCT YEAR(tgl_pesanan) AS tahun FROM pesanan ORDER BY tahun DESC");
+                                                    while ($row_tahun = mysqli_fetch_assoc($query_tahun)) {
+                                                        $selected = ($nilai == $row_tahun['tahun']) ? 'selected' : '';
+                                                        echo "<option value='{$row_tahun['tahun']}' $selected>{$row_tahun['tahun']}</option>";
+                                                    }
+                                                    ?>
+                                                </select>
                                             </div>
                                             <div class="col-md-2">
                                                 <button type="submit" class="btn btn-primary w-100">Tampilkan</button>
@@ -434,6 +451,45 @@ if ($jenis_laporan === 'pemasukan') {
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const periodeSelect = document.getElementById('periode');
+            const inputHarian = document.getElementById('nilai_harian');
+            const inputMingguan = document.getElementById('nilai_mingguan');
+            const inputBulanan = document.getElementById('nilai_bulanan');
+            const inputTahunan = document.getElementById('nilai_tahunan'); // <-- Variabel baru
+
+            function toggleFilterInputs() {
+                const periode = periodeSelect.value;
+                // Sembunyikan semua input terlebih dahulu
+                inputHarian.style.display = 'none';
+                inputMingguan.style.display = 'none';
+                inputBulanan.style.display = 'none';
+                inputTahunan.style.display = 'none'; // <-- Sembunyikan input tahunan
+
+                // Nonaktifkan semua input agar nilainya tidak terkirim
+                inputHarian.disabled = true;
+                inputMingguan.disabled = true;
+                inputBulanan.disabled = true;
+                inputTahunan.disabled = true; // <-- Nonaktifkan input tahunan
+
+                // Tampilkan dan aktifkan input yang sesuai
+                if (periode === 'harian') {
+                    inputHarian.style.display = 'block';
+                    inputHarian.disabled = false;
+                } else if (periode === 'mingguan') {
+                    inputMingguan.style.display = 'block';
+                    inputMingguan.disabled = false;
+                } else if (periode === 'bulanan') {
+                    inputBulanan.style.display = 'block';
+                    inputBulanan.disabled = false;
+                } else if (periode === 'tahunan') { // <-- Logika baru
+                    inputTahunan.style.display = 'block';
+                    inputTahunan.disabled = false;
+                }
+            }
+
+            periodeSelect.addEventListener('change', toggleFilterInputs);
+            // Panggil sekali saat halaman dimuat untuk menampilkan input yang benar sesuai kondisi awal
+            toggleFilterInputs();
             // Logika untuk menampilkan Chart hanya jika data yang sesuai ada
             <?php if ($jenis_laporan === 'jam_sibuk' && isset($labels_jam)): ?>
                 new Chart(document.getElementById('jamSibukChart'), {
@@ -501,6 +557,7 @@ if ($jenis_laporan === 'pemasukan') {
 
 
             <?php endif; ?>
+
         });
 
         document.addEventListener('DOMContentLoaded', function() {

@@ -130,7 +130,7 @@ if (!empty($all_pesanan_ids)) {
     <link href="../../css/styles.css" rel="stylesheet" />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
     <link rel="icon" type="image/png" href="../../assets/img/logo-kuebalok.png">
-     <meta http-equiv="refresh" content="60">
+    <meta http-equiv="refresh" content="60">
     <style>
         .catatan-pesanan {
             background-color: #fff3cd;
@@ -186,8 +186,9 @@ if (!empty($all_pesanan_ids)) {
                                                 <div class="card-body">
                                                     <div class="d-flex justify-content-between">
                                                         <h5 class="card-title"><?= htmlspecialchars($pesanan['nama_pemesan']) ?></h5>
-                                                        <span id="status-label-<?= htmlspecialchars($pesanan['id_pesanan']) ?>" class="badge bg-<?= ($pesanan['status_pesanan'] == 'menunggu_pembayaran') ? 'secondary' : 'info' ?>"><?= str_replace('_', ' ', $pesanan['status_pesanan']) ?></span>
+                                                        <span id="status-label-<?= htmlspecialchars($pesanan['id_pesanan']) ?>" class="badge bg-<?= ($pesanan['status_pesanan'] == 'menunggu_pembayaran') ? 'secondary' : 'info' ?>"><?= str_replace('_', ' ', $pesanan['status_pesanan']); ?></span>
                                                     </div>
+
                                                     <h6 class="card-subtitle mb-2 text-muted"><?= htmlspecialchars($pesanan['id_pesanan']) ?></h6>
                                                     <h6 class="card-subtitle mb-2 text-muted fst-italic"><?= htmlspecialchars(ucwords(str_replace('_', ' ', $pesanan['jenis_pesanan']))) ?></h6>
 
@@ -232,6 +233,8 @@ if (!empty($all_pesanan_ids)) {
                                                     <div class="d-flex justify-content-between">
                                                         <h5 class="card-title"><?= htmlspecialchars($antrean['nama_pemesan']) ?></h5><span class="badge bg-<?= $antrean['status_pesanan'] === 'pending' ? 'danger' : 'primary' ?>"><?= ucfirst($antrean['status_pesanan']) ?></span>
                                                     </div>
+
+
                                                     <h6 class="card-subtitle mb-2 text-muted"><?= htmlspecialchars($antrean['id_pesanan']) ?></h6>
                                                     <h6 class="card-subtitle mb-2 text-muted fst-italic"><?= htmlspecialchars(ucwords(str_replace('_', ' ', $antrean['jenis_pesanan']))) ?></h6>
 

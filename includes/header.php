@@ -27,6 +27,7 @@ if (!isset($koneksi) || $koneksi === null) {
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" href="backend/assets/img/logo-kuebalok.png">
+    
     <title><?php echo isset($page_title) ? htmlspecialchars($page_title) . ' - ' : ''; ?>Kue Balok Mang Wiro</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -44,7 +45,7 @@ if (!isset($koneksi) || $koneksi === null) {
 <body>
     <nav class="navbar">
         <a href="index.php" class="navbar-logo">
-            <img src="assets/img/logo.png" alt="LOGO KUE BALOK MANG WIRO" style="width: 75px;"/>
+            <img src="assets/img/logo.png" alt="LOGO KUE BALOK MANG WIRO" style="width: 50px;"/>
         </a>
         <div class="navbar-nav">
             <a href="index.php#home">Beranda</a>

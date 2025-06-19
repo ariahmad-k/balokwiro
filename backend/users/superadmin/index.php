@@ -161,7 +161,7 @@ $result_feedback = mysqli_query($koneksi, $sql_feedback);
 
                         <a class="nav-link" href="ulasan/tinjau_feedback.php">
                             <div class="sb-nav-link-icon"><i class="fas fa-comment-alt"></i></div>
-                            Masukan dan Saran
+                            Masukan & Saran
                         </a>
                     </div>
                 </div>

@@ -32,13 +32,31 @@ if (!$data) {
 // 3. LOGIKA PROSES FORM SAAT DISUBMIT (UPDATE DATA)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Ambil semua data dari form
-    $id_karyawan_post = $_POST['id_karyawan'];
     $nama = $_POST['nama'];
     $username = $_POST['username'];
     $jabatan = $_POST['jabatan'];
-    $no_tlp = $_POST['no_telepon'];
     $email = $_POST['email'];
-    $password = $_POST['password']; // Bisa kosong
+
+    // Ambil KEDUA nilai nomor telepon dari form
+    $no_tlp_baru = trim($_POST['no_tlp_baru']);
+    $no_tlp_lama = trim($_POST['no_tlp_lama']);
+
+    $no_tlp_final = ''; // Siapkan variabel untuk menyimpan nilai akhir
+
+    // Cek apakah admin mengetik nomor telepon baru di input yang terlihat
+    if (!empty($no_tlp_baru)) {
+        // Jika ya, validasi nomor baru tersebut
+        if (!ctype_digit($no_tlp_baru) || strlen($no_tlp_baru) < 10 || strlen($no_tlp_baru) > 13) {
+            $_SESSION['notif'] = ['pesan' => 'Update Gagal! Format nomor telepon baru tidak valid.', 'tipe' => 'danger'];
+            header("Location: kar_edit.php?id=" . $id_karyawan_edit); // asumsikan ada $id_karyawan_edit
+            exit;
+        }
+        // Jika valid, gunakan nomor telepon yang BARU
+        $no_tlp_final = $no_tlp_baru;
+    } else {
+        // Jika admin tidak mengetik apa-apa, gunakan nomor telepon LAMA dari input tersembunyi
+        $no_tlp_final = $no_tlp_lama;
+    }
 
     // 4. LOGIKA CERDAS UNTUK UPDATE PASSWORD
     // Cek apakah admin mengisi kolom password baru.
@@ -47,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
         $query_update = "UPDATE karyawan SET nama=?, username=?, jabatan=?, no_telepon=?, email=?, password=? WHERE id_karyawan=?";
         $stmt_update = mysqli_prepare($koneksi, $query_update);
-        mysqli_stmt_bind_param($stmt_update, "ssssssi", $nama, $username, $jabatan, $no_tlp, $email, $hashed_password, $id_karyawan_post);
+        mysqli_stmt_bind_param($stmt_update, "ssssssi", $nama, $username, $jabatan, $no_tlp_final, $email, $hashed_password, $id_karyawan_post);
     } else {
         // Jika dikosongkan, siapkan query UPDATE TANPA mengubah kolom password
         $query_update = "UPDATE karyawan SET nama=?, username=?, jabatan=?, no_telepon=?, email=? WHERE id_karyawan=?";
@@ -68,14 +86,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="utf-8" />
     <title>Edit Karyawan - Owner</title>
     <link href="../../../css/styles.css" rel="stylesheet" />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
-    <link rel="icon" type="image/png" href="../../../assets/img/logo-kuebalok.png"> 
+    <link rel="icon" type="image/png" href="../../../assets/img/logo-kuebalok.png">
 
 </head>
+
 <body class="sb-nav-fixed">
     <?php include "../inc/navbar.php"; ?>
     <div id="layoutSidenav">
@@ -117,6 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <div class="mb-3">
                                     <label for="no_tlp" class="form-label">No. Telepon</label>
                                     <input type="text" class="form-control" name="no_tlp" id="no_tlp" value="<?= htmlspecialchars($data['no_telepon']) ?>" required />
+                                    <input type="hidden" name="no_tlp_lama" value="<?= htmlspecialchars($karyawan['no_telepon']) ?>">
                                 </div>
                                 <div class="mb-3">
                                     <label for="email" class="form-label">Email</label>
@@ -136,10 +157,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </main>
             <footer class="py-4 bg-light mt-auto">
-                </footer>
+            </footer>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../../../js/scripts.js"></script>
 </body>
+
 </html>

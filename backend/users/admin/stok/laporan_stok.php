@@ -144,7 +144,8 @@ foreach ($produk_dan_stok as $item) {
                                         <input type="text" id="keterangan" name="keterangan" class="form-control" placeholder="Cth: Stok awal pagi atau Penambahan adonan">
                                     </div>
 
-                                    <h5 class="mt-4">Stok Adonan (Bahan Baku Utama)</h5>
+                                    <h5 class="mt-4">Stok Kategori</h5>
+                                    <h6>Stok Kue Balok dan Ketan Susu</h6>
                                     <hr>
                                     <?php foreach ($data_stok_kategori as $item): ?>
                                         <div class="mb-3 row align-items-center">
@@ -155,7 +156,8 @@ foreach ($produk_dan_stok as $item) {
                                         </div>
                                     <?php endforeach; ?>
 
-                                    <h5 class="mt-4">Stok Individu (Minuman & Lainnya)</h5>
+                                    <h5 class="mt-4">Stok Individu</h5>
+                                    <h6>Stok Minuman dan lainnya</h6>
                                     <hr>
                                     <?php foreach ($data_stok_individu as $item): ?>
                                         <div class="mb-3 row align-items-center">

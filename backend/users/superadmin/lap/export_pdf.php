@@ -57,24 +57,80 @@ ob_start();
 
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <title>Laporan Penjualan</title>
     <style>
-        body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 12px; color: #333; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .header h1 { margin: 0; font-size: 24px; }
-        .header p { margin: 5px 0; }
-        .summary-table, .detail-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        .summary-table td { padding: 10px; border: 1px solid #ddd; }
-        .summary-table .label { font-weight: bold; width: 40%; }
-        .detail-table th, .detail-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        .detail-table th { background-color: #f2f2f2; }
-        .text-right { text-align: right; }
-        .footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 10px; color: #777; }
-        h2 { border-bottom: 1px solid #ccc; padding-bottom: 5px; font-size: 18px; }
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .header p {
+            margin: 5px 0;
+        }
+
+        .summary-table,
+        .detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .summary-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+
+        .summary-table .label {
+            font-weight: bold;
+            width: 40%;
+        }
+
+        .detail-table th,
+        .detail-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .detail-table th {
+            background-color: #f2f2f2;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 10px;
+            color: #777;
+        }
+
+        h2 {
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+            font-size: 18px;
+        }
     </style>
 </head>
+
 <body>
     <div class="header">
         <h1>Kue Balok Mang Wiro</h1>
@@ -113,11 +169,11 @@ ob_start();
         </thead>
         <tbody>
             <?php foreach ($data_penjualan_produk as $item): ?>
-            <tr>
-                <td><?= htmlspecialchars($item['nama_produk']) ?></td>
-                <td><?= $item['total_jumlah'] ?></td>
-                <td class="text-right">Rp <?= number_format($item['total_omzet'], 0, ',', '.') ?></td>
-            </tr>
+                <tr>
+                    <td><?= htmlspecialchars($item['nama_produk']) ?></td>
+                    <td><?= $item['total_jumlah'] ?></td>
+                    <td class="text-right">Rp <?= number_format($item['total_omzet'], 0, ',', '.') ?></td>
+                </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
@@ -136,17 +192,20 @@ ob_start();
         </thead>
         <tbody>
             <?php if (empty($data_laporan)): ?>
-                <tr><td colspan="6" style="text-align: center;">Tidak ada data untuk periode ini.</td></tr>
-            <?php else: ?>
-                <?php $no = 1; foreach ($data_laporan as $laporan): ?>
                 <tr>
-                    <td><?= $no++ ?></td>
-                    <td><?= htmlspecialchars($laporan['id_pesanan']) ?></td>
-                    <td><?= date('d M Y, H:i', strtotime($laporan['tgl_pesanan'])) ?></td>
-                    <td><?= htmlspecialchars($laporan['nama_pemesan']) ?></td>
-                    <td class="text-right">Rp <?= number_format($laporan['total_harga'], 0, ',', '.') ?></td>
-                    <td><?= htmlspecialchars($laporan['nama_kasir'] ?? 'Online') ?></td>
+                    <td colspan="6" style="text-align: center;">Tidak ada data untuk periode ini.</td>
                 </tr>
+            <?php else: ?>
+                <?php $no = 1;
+                foreach ($data_laporan as $laporan): ?>
+                    <tr>
+                        <td><?= $no++ ?></td>
+                        <td><?= htmlspecialchars($laporan['id_pesanan']) ?></td>
+                        <td><?= date('d M Y, H:i', strtotime($laporan['tgl_pesanan'])) ?></td>
+                        <td><?= htmlspecialchars($laporan['nama_pemesan']) ?></td>
+                        <td class="text-right">Rp <?= number_format($laporan['total_harga'], 0, ',', '.') ?></td>
+                        <td><?= htmlspecialchars($laporan['nama_kasir'] ?? 'Online') ?></td>
+                    </tr>
                 <?php endforeach; ?>
             <?php endif; ?>
         </tbody>
@@ -156,6 +215,7 @@ ob_start();
         Laporan ini dibuat secara otomatis pada <?= date('d M Y, H:i:s') ?>
     </div>
 </body>
+
 </html>
 
 <?php

@@ -1190,16 +1190,7 @@ footer .credit p {
   .menu-card-horizontal-inner {
     padding: 1.2rem 1rem 1.2rem 1rem;
   }
-  footer {
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 100vw;
-    z-index: 100;
-  }
-  body {
-    padding-bottom: 110px; /* Sesuaikan dengan tinggi footer jika perlu */
-  }
+ 
 }
 
 .menu-nav-wrapper {
