@@ -130,6 +130,7 @@ if (!empty($all_pesanan_ids)) {
     <link href="../../css/styles.css" rel="stylesheet" />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
     <link rel="icon" type="image/png" href="../../assets/img/logo-kuebalok.png">
+     <meta http-equiv="refresh" content="60">
     <style>
         .catatan-pesanan {
             background-color: #fff3cd;

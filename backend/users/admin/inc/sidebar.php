@@ -8,7 +8,12 @@ if (session_status() == PHP_SESSION_NONE) {
     <div class="sb-sidenav-menu">
         <div class="nav">
             <div class="sb-sidenav-menu-heading">Menu Utama</div>
-            
+            <a class="nav-link" href="index.php">
+                <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                Dashboard
+            </a>
+
+            <div class="sb-sidenav-menu-heading">Menu</div>
             <a class="nav-link" href="../menu/data_menu.php">
                 <div class="sb-nav-link-icon"><i class="fas fa-utensils"></i></div>
                 Manajemen Menu
@@ -17,7 +22,7 @@ if (session_status() == PHP_SESSION_NONE) {
                 <div class="sb-nav-link-icon"><i class="fas fa-boxes"></i></div>
                 Manajemen Stok
             </a>
-            </div>
+        </div>
     </div>
     <div class="sb-sidenav-footer">
         <div class="small">Panel Role:</div>

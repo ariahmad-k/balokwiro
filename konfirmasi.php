@@ -1,7 +1,12 @@
 <?php
-session_start();
-// Letakkan koneksi di atas agar bisa digunakan oleh semua logika
-include 'backend/koneksi.php';
+// Memastikan sesi dimulai dengan aman di setiap halaman
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+// Memuat file koneksi dan file pengecekan pesanan kadaluarsa
+// Pastikan path ini sesuai dengan struktur folder Anda
+require_once 'backend/koneksi.php';
+require_once 'backend/cek_kadaluarsa.php';
 
 // ================================================================
 // BAGIAN 1: LOGIKA PEMROSESAN FORM UPLOAD (POST REQUEST)
@@ -11,36 +16,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['bukti_pembayaran']))
     $id_pesanan_post = $_POST['id_pesanan'] ?? '';
     $file = $_FILES['bukti_pembayaran'];
 
-    // Validasi dasar
+    // Validasi dasar: pastikan ada ID pesanan dan tidak ada error upload awal
     if (empty($id_pesanan_post) || $file['error'] !== UPLOAD_ERR_OK) {
         $_SESSION['notif_konfirmasi'] = ['pesan' => 'Terjadi error saat mengupload file. Silakan coba lagi.', 'tipe' => 'danger'];
         header("Location: konfirmasi.php?id=" . urlencode($id_pesanan_post));
         exit;
     }
 
-    // Validasi tipe & ukuran file
-    $allowed_types = ['image/jpeg', 'image/png', 'image/jpg'];
-    $max_size = 2 * 1024 * 1024; // 2MB
+    // Validasi tipe file berdasarkan ekstensi (lebih andal) dan ukuran
+    $nama_file = $file['name'];
+    $ext = strtolower(pathinfo($nama_file, PATHINFO_EXTENSION));
+    $allowed_ext = ['jpg', 'jpeg', 'png'];
+    $max_size = 2 * 1024 * 1024; // Batas ukuran 2MB
 
-    if (in_array($file['type'], $allowed_types) && $file['size'] < $max_size) {
-        // Buat nama file yang unik dan aman
-        $nama_file_baru = $id_pesanan_post . '-' . time() . '.' . pathinfo($file['name'], PATHINFO_EXTENSION);
+    if (in_array($ext, $allowed_ext) && $file['size'] < $max_size) {
+        // Buat nama file baru yang unik untuk menghindari tumpang tindih
+        $nama_file_baru = $id_pesanan_post . '-' . time() . '.' . $ext;
+        // Path disesuaikan dengan struktur folder Anda
         $lokasi_upload = 'backend/assets/img/bukti_bayar/' . $nama_file_baru;
 
+        // Coba pindahkan file dari direktori temporary ke direktori permanen
         if (move_uploaded_file($file['tmp_name'], $lokasi_upload)) {
-            // Jika upload file fisik berhasil, update database
+
+            // Jika file berhasil diupload, update entri di database
             $stmt_update = mysqli_prepare($koneksi, "UPDATE pesanan SET bukti_pembayaran = ?, status_pesanan = 'menunggu_konfirmasi' WHERE id_pesanan = ? AND status_pesanan = 'menunggu_pembayaran'");
             mysqli_stmt_bind_param($stmt_update, "ss", $nama_file_baru, $id_pesanan_post);
 
             if (mysqli_stmt_execute($stmt_update) && mysqli_stmt_affected_rows($stmt_update) > 0) {
+                // Jika update database berhasil
                 $_SESSION['notif_konfirmasi'] = ['pesan' => 'Terima kasih! Bukti pembayaran berhasil diupload dan akan segera kami periksa.', 'tipe' => 'success'];
             } else {
+                // Jika update database gagal
                 $_SESSION['notif_konfirmasi'] = ['pesan' => 'Gagal menyimpan data bukti pembayaran. Mungkin pesanan sudah diproses atau dibatalkan.', 'tipe' => 'danger'];
             }
         } else {
+            // Jika gagal memindahkan file
             $_SESSION['notif_konfirmasi'] = ['pesan' => 'Gagal memindahkan file yang diupload.', 'tipe' => 'danger'];
         }
     } else {
+        // Jika tipe file atau ukuran tidak sesuai
         $_SESSION['notif_konfirmasi'] = ['pesan' => 'File tidak valid. Pastikan formatnya JPG/PNG dan ukuran di bawah 2MB.', 'tipe' => 'warning'];
     }
 
@@ -49,36 +63,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['bukti_pembayaran']))
     exit;
 }
 
-
 // ================================================================
-// BAGIAN 2: LOGIKA PENGAMBILAN DATA (GET REQUEST)
+// BAGIAN 2: LOGIKA PENGAMBILAN DATA UNTUK MENAMPILKAN HALAMAN
 // ================================================================
 
-// Validasi ID Pesanan dari URL
+// Validasi ID Pesanan dari URL (GET request)
 if (!isset($_GET['id']) || empty($_GET['id'])) {
     header('Location: index.php');
     exit;
 }
 $id_pesanan = $_GET['id'];
 
-// Ambil data pesanan utama
+// Ambil data pesanan utama dari database
 $stmt_get = mysqli_prepare($koneksi, "SELECT * FROM pesanan WHERE id_pesanan = ?");
 mysqli_stmt_bind_param($stmt_get, "s", $id_pesanan);
 mysqli_stmt_execute($stmt_get);
 $result_get = mysqli_stmt_get_result($stmt_get);
 $pesanan = mysqli_fetch_assoc($result_get);
 
-// Jika ID pesanan tidak valid, arahkan ke halaman lacak dengan notifikasi
+// Jika ID pesanan tidak ditemukan di database, arahkan ke halaman lacak
 if (!$pesanan) {
     header('Location: lacak.php?error=notfound');
     exit;
 }
 
-// Ambil daftar metode pembayaran yang aktif
+// Ambil daftar metode pembayaran yang aktif untuk ditampilkan
 $sql_metode = "SELECT * FROM metode_pembayaran WHERE status = 'aktif'";
 $result_metode = mysqli_query($koneksi, $sql_metode);
 
-// Terakhir, panggil header dari template
+// Set judul halaman dan panggil file header
 $page_title = "Konfirmasi Pesanan";
 include 'includes/header.php';
 ?>
@@ -178,6 +191,7 @@ include 'includes/header.php';
         <h2 style="text-align: center; font-size: 2.6rem; margin-bottom: 2rem;">Konfirmasi <span>Pemesanan</span></h2>
 
         <?php
+        // Tampilkan notifikasi dari proses upload jika ada
         if (isset($_SESSION['notif_konfirmasi'])) {
             $notif = $_SESSION['notif_konfirmasi'];
             echo '<div class="alert alert-' . htmlspecialchars($notif['tipe']) . '">' . htmlspecialchars($notif['pesan']) . '</div>';
@@ -209,25 +223,26 @@ include 'includes/header.php';
 
                 <div class="payment-options mt-4 text-start">
                     <h5>Pilih Metode Pembayaran:</h5>
-                    <?php mysqli_data_seek($result_metode, 0); // Reset pointer hasil query 
-                    ?>
-                    <?php while ($metode = mysqli_fetch_assoc($result_metode)): ?>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="pilihan_pembayaran" id="metode_<?= $metode['id_metode'] ?>"
-                                data-nama-metode="<?= htmlspecialchars($metode['nama_metode']) ?>"
-                                data-atas-nama="<?= htmlspecialchars($metode['atas_nama']) ?>"
-                                data-nomor="<?= htmlspecialchars($metode['nomor_tujuan']) ?>"
-                                data-gambar="<?= htmlspecialchars($metode['gambar_path'] ?? '') ?>">
-                            <label class="form-check-label" for="metode_<?= $metode['id_metode'] ?>">
-                                <?= htmlspecialchars($metode['nama_metode']) ?>
-                            </label>
-                        </div>
-                    <?php endwhile; ?>
+                    <?php if ($result_metode && mysqli_num_rows($result_metode) > 0): ?>
+                        <?php mysqli_data_seek($result_metode, 0); // Reset pointer hasil query 
+                        ?>
+                        <?php while ($metode = mysqli_fetch_assoc($result_metode)): ?>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="pilihan_pembayaran" id="metode_<?= $metode['id_metode'] ?>"
+                                    data-nama-metode="<?= htmlspecialchars($metode['nama_metode']) ?>"
+                                    data-atas-nama="<?= htmlspecialchars($metode['atas_nama']) ?>"
+                                    data-nomor="<?= htmlspecialchars($metode['nomor_tujuan']) ?>"
+                                    data-gambar="<?= htmlspecialchars($metode['gambar_path'] ?? '') ?>">
+                                <label class="form-check-label" for="metode_<?= $metode['id_metode'] ?>">
+                                    <?= htmlspecialchars($metode['nama_metode']) ?>
+                                </label>
+                            </div>
+                        <?php endwhile; ?>
+                    <?php endif; ?>
 
                     <div id="detail-pembayaran" class="payment-details">
                         <p class="mb-1">Silakan lakukan pembayaran ke:</p>
                         <h5 id="info-atas-nama" class="mb-0"></h5>
-
                         <div id="nomor-container" class="d-flex align-items-center gap-2 mt-1">
                             <h4 id="info-nomor" class="fw-bold mb-0"></h4>
                             <button id="copy-nomor-btn" class="btn btn-secondary btn-sm" title="Salin Nomor"><i class="fas fa-clipboard"></i></button>
@@ -265,45 +280,44 @@ include 'includes/header.php';
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Jalankan skrip hanya jika kita berada di halaman 'menunggu_pembayaran'
+        // Jalankan skrip hanya jika elemen-elemen untuk halaman 'menunggu_pembayaran' ada
         if (document.getElementById('countdown-timer')) {
 
             // --- FITUR TOMBOL SALIN NOMOR PESANAN ---
-            const copyBtn = document.getElementById('copy-btn');
-            const orderIdText = document.getElementById('order-id-text');
-            copyBtn.addEventListener('click', function() {
-                navigator.clipboard.writeText(orderIdText.textContent).then(() => {
-                    const originalHTML = this.innerHTML;
-                    this.innerHTML = '<i class="fas fa-check"></i>';
-                    this.classList.add('copied');
-                    setTimeout(() => {
-                        this.innerHTML = originalHTML;
-                        this.classList.remove('copied');
-                    }, 2000);
+            const copyButton = document.getElementById('copy-btn');
+            if (copyButton) {
+                const orderIdTextElement = document.getElementById('order-id-text');
+                copyButton.addEventListener('click', function() {
+                    navigator.clipboard.writeText(orderIdTextElement.textContent).then(() => {
+                        const originalHTML = this.innerHTML;
+                        this.innerHTML = '<i class="fas fa-check"></i>';
+                        this.classList.add('copied');
+                        setTimeout(() => {
+                            this.innerHTML = originalHTML;
+                            this.classList.remove('copied');
+                        }, 2000);
+                    });
                 });
-            });
+            }
 
             // --- FITUR TIMER KADALUARSA 10 MENIT ---
-            const countdownEl = document.getElementById('countdown-timer');
+            const countdownElement = document.getElementById('countdown-timer');
             const orderTime = new Date('<?= date("Y-m-d H:i:s", strtotime($pesanan['tgl_pesanan'])) ?>');
             const expiryTime = orderTime.getTime() + 10 * 60 * 1000;
-
             const timerInterval = setInterval(() => {
                 const now = new Date().getTime();
                 const distance = expiryTime - now;
-
                 if (distance < 0) {
                     clearInterval(timerInterval);
-                    countdownEl.innerHTML = "Waktu pembayaran telah habis. Halaman akan dimuat ulang untuk memperbarui status.";
-                    countdownEl.classList.remove('alert-warning');
-                    countdownEl.classList.add('alert-danger');
+                    countdownElement.innerHTML = "Waktu pembayaran telah habis. Pesanan otomatis dibatalkan.";
+                    countdownElement.classList.remove('alert-warning');
+                    countdownElement.classList.add('alert-danger');
                     setTimeout(() => window.location.reload(), 3000);
                     return;
                 }
-
                 const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                countdownEl.innerHTML = `Sisa waktu pembayaran: <strong>${minutes}m ${seconds}s</strong>`;
+                countdownElement.innerHTML = `Sisa waktu pembayaran: <strong>${minutes}m ${seconds}s</strong>`;
             }, 1000);
 
             // --- FITUR PILIHAN PEMBAYARAN DINAMIS ---
@@ -320,12 +334,12 @@ include 'includes/header.php';
                     detailDiv.classList.add('active');
                     infoAtasNama.textContent = "Atas Nama: " + this.dataset.atasNama;
 
-                    // Logika untuk menampilkan gambar (QRIS) atau teks (lainnya)
                     if (this.dataset.namaMetode.toUpperCase() === 'QRIS') {
                         nomorContainer.style.display = 'none';
                         gambarContainer.style.display = 'block';
                         if (this.dataset.gambar && this.dataset.gambar !== '') {
-                            infoGambar.src = '../backend/assets/img/metode_bayar/' + this.dataset.gambar;
+                            // Path disesuaikan agar konsisten
+                            infoGambar.src = 'backend/assets/img/metode_bayar/QRIS.jpg';
                         }
                     } else {
                         nomorContainer.style.display = 'flex';
@@ -335,19 +349,22 @@ include 'includes/header.php';
                 });
             });
 
-            copyNomorBtn.addEventListener('click', function() {
-                navigator.clipboard.writeText(infoNomor.textContent).then(() => {
-                    const originalIcon = this.innerHTML;
-                    this.innerHTML = '<i class="fas fa-check"></i>';
-                    setTimeout(() => {
-                        this.innerHTML = originalIcon;
-                    }, 2000);
+            if (copyNomorBtn) {
+                copyNomorBtn.addEventListener('click', function() {
+                    navigator.clipboard.writeText(infoNomor.textContent).then(() => {
+                        const originalIcon = this.innerHTML;
+                        this.innerHTML = '<i class="fas fa-check"></i>';
+                        setTimeout(() => {
+                            this.innerHTML = originalIcon;
+                        }, 2000);
+                    });
                 });
-            });
+            }
         }
     });
 </script>
 
 <?php
+// Panggil kerangka bagian bawah (footer)
 include 'includes/footer.php';
 ?>

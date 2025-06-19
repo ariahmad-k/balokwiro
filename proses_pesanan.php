@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cart_data'])) {
     $no_telepon = trim($_POST['no_telepon']);
     $catatan = trim($_POST['catatan'] ?? '');
     $jenis_pesanan = $_POST['jenis_pesanan'] ?? 'take_away';
-    $metode_pembayaran = $_POST['metode_pembayaran'] ?? ''; // Asumsi pembayaran online
+    $metode_pembayaran = $_POST['metode_pembayaran'] ?? 'QRIS'; // Asumsi pembayaran online
     $cart_data = json_decode($_POST['cart_data'], true);
 
     if (!ctype_digit($no_telepon) || strlen($no_telepon) < 12 || strlen($no_telepon) > 13) {
